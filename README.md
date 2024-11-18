@@ -37,4 +37,4 @@ The system consists of:
 - CircuitPython firmware for Pico Ws
 - WebSocket server for device communication
 
-![image](https://github.com/user-attachments/assets/b5b1271d-5efa-45e6-8772-49ee33256923)
+![image](https://github.com/user-attachments/assets/643c46a0-34ac-4bff-a791-02d989b889cb)
