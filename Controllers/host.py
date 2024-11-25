@@ -76,21 +76,25 @@ def setup_server():
             print("Received request to root")
             return Response(request, "Server is running!")
 
-        @server.route("/send-signal")
+        @server.route("/send-signal", methods=["POST"])
         def stop_route(request: Request):
             print("Received request to send sound signal")
             try:
                 # Parse JSON body from request
                 body = request.json()
                 device_id = body.get("device")
-                
+                print(device_id)
                 if device_id is None:
                     return Response(request, "Missing device ID", status=400)
                 
-                # TODO: Make this send signal to iPad
-                return
+                if device_id == 1:
+                    uart.write("A")
+                    time.sleep(0.1)
+                print("ALL GOOD")
+                return Response(request, "Signal sent successfully")
                 
             except ValueError:
+                print("Invalid JSON body")
                 return Response(request, "Invalid JSON body", status=400)
 
         print("Routes configured successfully")

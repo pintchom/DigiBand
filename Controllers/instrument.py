@@ -11,7 +11,7 @@ from adafruit_debouncer import Button
 
 HOST_URL = "http://10.20.73.111/"
 
-button_input = digitalio.DigitalInOut(board.D12) # Wired to GP15
+button_input = digitalio.DigitalInOut(board.GP15) # Wired to GP15
 button_input.switch_to_input(digitalio.Pull.UP) # Note: Pull.UP for external buttons
 button = Button(button_input) # NOTE: False for external buttons
 
@@ -61,4 +61,4 @@ while True:
     if button.pressed:
         print("Button pressed")
         send_signal()
-    time.sleep(0.1)
+        time.sleep(.1)

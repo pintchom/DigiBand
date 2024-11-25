@@ -52,8 +52,8 @@ struct ContentView: View {
                     .padding()
             }
         }
-        .onChange(of: bluetoothManager.lastMessage) { newValue in
-            switch newValue {
+        .onChange(of: bluetoothManager.messageReceived) { _ in
+            switch bluetoothManager.lastMessage {
                 case "A":
                     playSound(soundName: "tamborine", audioPlayer: 1)
                 case "B":

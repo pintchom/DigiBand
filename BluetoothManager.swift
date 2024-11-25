@@ -11,6 +11,7 @@ import CoreBluetooth
 class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     @Published var isConnected = false
     @Published var lastMessage = ""
+    @Published var messageReceived = false
     private var centralManager: CBCentralManager!
     private var peripheral: CBPeripheral?
     
@@ -65,6 +66,7 @@ class BluetoothManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         if let string = String(data: data, encoding: .utf8) {
             DispatchQueue.main.async {
                 self.lastMessage = string
+                self.messageReceived.toggle()
                 print("Received: \(string)")
             }
         }
