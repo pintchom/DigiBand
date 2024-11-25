@@ -48,21 +48,26 @@ struct ContentView: View {
                 
             }
             if !bluetoothManager.lastMessage.isEmpty {
-                if bluetoothManager.lastMessage == "A" {
-                    Text("Last message: \(bluetoothManager.lastMessage)")
-                        .padding()
-                        .onAppear {
-                            if bluetoothManager.lastMessage == "A" {
-                                playSound(soundName: "tamborine", audioPlayer: 1)
-                            }
-                        }
-                } else {
-                    Text("Last message: \(bluetoothManager.lastMessage)")
-                        .padding()
-                }
+                Text("Last message: \(bluetoothManager.lastMessage)")
+                    .padding()
+            }
+        }
+        .onChange(of: bluetoothManager.lastMessage) { newValue in
+            switch newValue {
+                case "A":
+                    playSound(soundName: "tamborine", audioPlayer: 1)
+                case "B":
+                    playSound(soundName: "hat", audioPlayer: 2)
+                case "C":
+                    playSound(soundName: "snare", audioPlayer: 3)
+                case "D":
+                    playSound(soundName: "synth", audioPlayer: 4)
+                default:
+                    break
             }
         }
     }
+    
     func playSound(soundName: String, audioPlayer: Int) {
         guard let soundFile = NSDataAsset(name: soundName) else {
             print("Could not read file named: \(soundName)")
