@@ -22,7 +22,7 @@ def send_signal():
         requests = adafruit_requests.Session(pool)
         response = requests.post(
             HOST_URL + "send-signal",
-            json={"device": 1}  # Replace with actual device ID if needed
+            json={"device": 2}  # Replace with actual device ID if needed
         )
 
         print("Response status code:", response.status_code)

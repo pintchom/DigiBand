@@ -7,89 +7,192 @@
 
 import SwiftUI
 import AVFAudio
+import FirebaseStorage
+import SwiftData
 
 struct ContentView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var recordings: [Recording]
     @StateObject private var bluetoothManager = BluetoothManager()
-    @State private var players = []
-    @State private var audioPlayer1: AVAudioPlayer!
-    @State private var audioPlayer2: AVAudioPlayer!
-    @State private var audioPlayer3: AVAudioPlayer!
-    @State private var audioPlayer4: AVAudioPlayer!
+    @State private var players: [Int: AVAudioPlayer] = [:]
+    @State private var showingSoundBrowser = false
+    @State private var showingEditArrangement = false
+    @State private var isRecording = false
+    @State private var recordedActions: [RecordedAction] = []
+    @State private var soundAssignments = [
+        1: "taps/Tap (1).wav",
+        2: "taps/Tap (2).wav",
+        3: "taps/Tap (3).wav",
+        4: "taps/Tap (4).wav"
+    ]
+    
     var body: some View {
-        VStack {
-            Text(bluetoothManager.isConnected ? "Connected to CPB" : "Searching for CPB...")
+        NavigationStack {
+            VStack {
+                HStack {
+                    Circle()
+                        .fill(bluetoothManager.isConnected ? .green : .red)
+                        .frame(width: 36, height: 36)
+                        .opacity(bluetoothManager.isConnected ? 1.0 : 0.6)
+                        .animation(!bluetoothManager.isConnected ? Animation.easeInOut(duration: 1).repeatForever() : nil, value: bluetoothManager.isConnected)
+                    Text(bluetoothManager.isConnected ? "Connected to Host Controller" : "Searching for Host Controller...")
+                    Spacer()
+                    NavigationLink("Recordings") {
+                        RecordingsView()
+                    }
+                }
                 .padding()
-            HStack {
-                Button {
-                    playSound(soundName: "hat", audioPlayer: 1)
-                } label: {
-                    Text("1")
+                .padding(.top, 36)
+                Spacer()
+                HStack {
+                    Button {
+                        playStorageSound(buttonNumber: 1)
+                        if isRecording {
+                            recordedActions.append(RecordedAction(timestamp: Date(), buttonNumber: 1))
+                        }
+                    } label: {
+                        Text("A")
+                            .font(.title)
+                            .frame(width: 60, height: 60)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    Button {
+                        playStorageSound(buttonNumber: 2)
+                        if isRecording {
+                            recordedActions.append(RecordedAction(timestamp: Date(), buttonNumber: 2))
+                        }
+                    } label: {
+                        Text("B")
+                            .font(.title)
+                            .frame(width: 60, height: 60)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    Button {
+                        playStorageSound(buttonNumber: 3)
+                        if isRecording {
+                            recordedActions.append(RecordedAction(timestamp: Date(), buttonNumber: 3))
+                        }
+                    } label: {
+                        Text("C")
+                            .font(.title)
+                            .frame(width: 60, height: 60)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    Button {
+                        playStorageSound(buttonNumber: 4)
+                        if isRecording {
+                            recordedActions.append(RecordedAction(timestamp: Date(), buttonNumber: 4))
+                        }
+                    } label: {
+                        Text("D")
+                            .font(.title)
+                            .frame(width: 60, height: 60)
+                    }
+                    .buttonStyle(.borderedProminent)
                 }
-                .buttonStyle(.borderedProminent)
-                Button {
-                    playSound(soundName: "tamborine", audioPlayer: 2)
-                } label: {
-                    Text("2")
+                if !bluetoothManager.lastMessage.isEmpty {
+                    Text("Last message: \(bluetoothManager.lastMessage)")
+                        .padding()
                 }
-                .buttonStyle(.borderedProminent)
-                Button {
-                    playSound(soundName: "snare", audioPlayer: 3)
-                } label: {
-                    Text("3")
-                }
-                .buttonStyle(.borderedProminent)
-                Button {
-                    playSound(soundName: "synth", audioPlayer: 4)
-                    playSound(soundName: "snare", audioPlayer: 3)
-                } label: {
-                    Text("4")
-                }
-                .buttonStyle(.borderedProminent)
                 
+                HStack {
+                    Button("Browse Sounds") {
+                        showingSoundBrowser = true
+                    }
+                    .buttonStyle(.bordered)
+                    
+                    Button("Edit Arrangement") {
+                        showingEditArrangement = true
+                    }
+                    .buttonStyle(.bordered)
+                    
+                    Button(isRecording ? "Stop Recording" : "Start Recording") {
+                        if isRecording {
+                            // Save recording to SwiftData
+                            let recording = Recording(actions: recordedActions, instruments: soundAssignments)
+                            modelContext.insert(recording)
+                            recordedActions = []
+                        }
+                        isRecording.toggle()
+                    }
+                    .buttonStyle(.bordered)
+                    .foregroundColor(isRecording ? .red : .blue)
+                }
+                .padding()
+                Spacer()
             }
-            if !bluetoothManager.lastMessage.isEmpty {
-                Text("Last message: \(bluetoothManager.lastMessage)")
-                    .padding()
+            .onChange(of: bluetoothManager.messageReceived) { _ in
+                switch bluetoothManager.lastMessage {
+                    case "A":
+                        playStorageSound(buttonNumber: 1)
+                        if isRecording {
+                            recordedActions.append(RecordedAction(timestamp: Date(), buttonNumber: 1))
+                        }
+                    case "B":
+                        playStorageSound(buttonNumber: 2)
+                        if isRecording {
+                            recordedActions.append(RecordedAction(timestamp: Date(), buttonNumber: 2))
+                        }
+                    case "C":
+                        playStorageSound(buttonNumber: 3)
+                        if isRecording {
+                            recordedActions.append(RecordedAction(timestamp: Date(), buttonNumber: 3))
+                        }
+                    case "D":
+                        playStorageSound(buttonNumber: 4)
+                        if isRecording {
+                            recordedActions.append(RecordedAction(timestamp: Date(), buttonNumber: 4))
+                        }
+                    default:
+                        break
+                }
             }
-        }
-        .onChange(of: bluetoothManager.messageReceived) { _ in
-            switch bluetoothManager.lastMessage {
-                case "A":
-                    playSound(soundName: "tamborine", audioPlayer: 1)
-                case "B":
-                    playSound(soundName: "hat", audioPlayer: 2)
-                case "C":
-                    playSound(soundName: "snare", audioPlayer: 3)
-                case "D":
-                    playSound(soundName: "synth", audioPlayer: 4)
-                default:
-                    break
+            .fullScreenCover(isPresented: $showingSoundBrowser) {
+                SoundBrowserView()
+            }
+            .fullScreenCover(isPresented: $showingEditArrangement) {
+                EditArrangementView(soundAssignments: $soundAssignments)
             }
         }
     }
     
-    func playSound(soundName: String, audioPlayer: Int) {
-        guard let soundFile = NSDataAsset(name: soundName) else {
-            print("Could not read file named: \(soundName)")
-            return
-        }
-        do {
-            if audioPlayer == 1 {
-                audioPlayer1 = try AVAudioPlayer(data: soundFile.data)
-                audioPlayer1.play()
-            } else if audioPlayer == 2 {
-                audioPlayer2 = try AVAudioPlayer(data: soundFile.data)
-                audioPlayer2.play()
-            } else if audioPlayer == 3 {
-                audioPlayer3 = try AVAudioPlayer(data: soundFile.data)
-                audioPlayer3.play()
-            } else if audioPlayer == 4 {
-                audioPlayer4 = try AVAudioPlayer(data: soundFile.data)
-                audioPlayer4.play()
+    func playStorageSound(buttonNumber: Int) {
+        guard let soundName = soundAssignments[buttonNumber] else { return }
+        
+        let storage = Storage.storage()
+        // Split the sound path into folder and file components
+        let components = soundName.split(separator: "/")
+        guard components.count == 2 else { return }
+        
+        let folderName = String(components[0])
+        let fileName = String(components[1])
+        let soundRef = storage.reference().child("sounds/\(folderName)/\(fileName)")
+        
+        soundRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
+            if let error = error {
+                print("Error downloading sound: \(error.localizedDescription)")
+                return
             }
-        } catch {
-            print("ERROR: \(error.localizedDescription) creating audio player")
+            
+            guard let soundData = data else { return }
+            
+            do {
+                players[buttonNumber]?.stop()
+                players[buttonNumber] = try AVAudioPlayer(data: soundData)
+                players[buttonNumber]?.play()
+            } catch {
+                print("ERROR: \(error.localizedDescription) creating audio player")
+            }
         }
+    }
+}
+
+extension NSDataAsset {
+    static func allAssetNames(matching prefix: String = "") -> [String] {
+        let assetNames = Bundle.main.paths(forResourcesOfType: "dataset", inDirectory: "Assets.xcassets")
+            .compactMap { URL(fileURLWithPath: $0).deletingPathExtension().lastPathComponent }
+            .filter { $0.hasPrefix(prefix) }
+        return assetNames.sorted()
     }
 }
 
