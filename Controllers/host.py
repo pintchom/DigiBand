@@ -1,4 +1,4 @@
-import board, time
+import board, time, neopixel
 import digitalio
 from adafruit_ble import BLERadio
 from adafruit_ble.advertising.standard import ProvideServicesAdvertisement
@@ -57,6 +57,11 @@ advertisement = ProvideServicesAdvertisement(uart)
 print("Starting BLE")
 
 ################################################################################################################
+'''SETUP NEOPIXEL'''
+
+pixels = neopixel.NeoPixel(board.IO14, 1)
+
+################################################################################################################
 '''SETUP SERVER'''
 
 def setup_server():
@@ -89,7 +94,13 @@ def setup_server():
                 
                 if device_id == 1:
                     uart.write("A")
-                    time.sleep(0.1)
+                elif device_id == 2:
+                    uart.write("B")
+                elif device_id == 3:
+                    uart.write("C")
+                elif device_id == 4:
+                    uart.write("D")
+                
                 print("ALL GOOD")
                 return Response(request, "Signal sent successfully")
                 
@@ -130,17 +141,28 @@ def run_server():
         print(f"  http://{wifi.radio.ipv4_address}/send-signal")
 
         while True:
-            ble.start_advertising(advertisement)
             print("Waiting for connection...")
+            ble.start_advertising(advertisement)
+            pixels.fill((0,0,255))
             while not ble.connected:
-                pass
+                for i in range(1,101):
+                    pixels.brightness = i/100
+                    if ble.connected:
+                        break
+                    time.sleep(0.01)
+                for i in range(100,0,-1):
+                    pixels.brightness = i/100
+                    if ble.connected:
+                        break
+                    time.sleep(0.01)
+            pixels.fill((0,255,0))
+            pixels.brightness = 0.5
 
             print("Connected!")
 
             while ble.connected:
                 try:
                     server.poll()
-                    time.sleep(0.1)
                 except Exception as e:
                     print(f"Error in server poll: {str(e)}")
                     time.sleep(1)  # Brief pause before continuing

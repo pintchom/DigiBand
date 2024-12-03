@@ -183,8 +183,12 @@ struct FolderSection: View {
         DisclosureGroup(folder) {
             ForEach(sounds, id: \.self) { sound in
                 Button {
-                    soundAssignments[buttonNumber] = "\(folder)/\(sound)"
-                    isPresented = false
+                    // Download and cache the sound before assigning
+                    Task {
+                        await downloadAndCacheSound(folder: folder, sound: sound)
+                        soundAssignments[buttonNumber] = "\(folder)/\(sound)"
+                        isPresented = false
+                    }
                 } label: {
                     HStack {
                         Text(sound.replacingOccurrences(of: ".wav", with: ""))
@@ -205,6 +209,27 @@ struct FolderSection: View {
             return false
         }
         return currentAssignment == "\(folder)/\(sound)"
+    }
+    
+    private func downloadAndCacheSound(folder: String, sound: String) async {
+        let storage = Storage.storage()
+        let soundRef = storage.reference().child("sounds/\(folder)/\(sound)")
+        
+        do {
+            let data = try await soundRef.data(maxSize: 5 * 1024 * 1024)
+            
+            // Get the documents directory
+            let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            let soundPath = documentsPath.appendingPathComponent("\(folder)_\(sound)")
+            
+            // Create folder if it doesn't exist
+            try FileManager.default.createDirectory(at: documentsPath, withIntermediateDirectories: true)
+            
+            // Save the sound file
+            try data.write(to: soundPath)
+        } catch {
+            print("Error caching sound: \(error.localizedDescription)")
+        }
     }
 }
 

@@ -159,13 +159,30 @@ struct ContentView: View {
     func playStorageSound(buttonNumber: Int) {
         guard let soundName = soundAssignments[buttonNumber] else { return }
         
-        let storage = Storage.storage()
         // Split the sound path into folder and file components
         let components = soundName.split(separator: "/")
         guard components.count == 2 else { return }
         
         let folderName = String(components[0])
         let fileName = String(components[1])
+        
+        // Try to play cached sound first
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let soundPath = documentsPath.appendingPathComponent("\(folderName)_\(fileName)")
+        
+        if FileManager.default.fileExists(atPath: soundPath.path) {
+            do {
+                players[buttonNumber]?.stop()
+                players[buttonNumber] = try AVAudioPlayer(contentsOf: soundPath)
+                players[buttonNumber]?.play()
+                return
+            } catch {
+                print("Error playing cached sound: \(error.localizedDescription)")
+            }
+        }
+        
+        // Fallback to Firebase if cached file doesn't exist
+        let storage = Storage.storage()
         let soundRef = storage.reference().child("sounds/\(folderName)/\(fileName)")
         
         soundRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
@@ -180,6 +197,9 @@ struct ContentView: View {
                 players[buttonNumber]?.stop()
                 players[buttonNumber] = try AVAudioPlayer(data: soundData)
                 players[buttonNumber]?.play()
+                
+                // Cache the sound for future use
+                try soundData.write(to: soundPath)
             } catch {
                 print("ERROR: \(error.localizedDescription) creating audio player")
             }
