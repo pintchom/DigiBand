@@ -9,6 +9,7 @@ The system consists of:
 - ESP32-S3 N8R8 (Main Controller)
 - 4 x Raspberry Pi Pico W devices (Instrument Controllers)
 - Adaptive switches for student input
+- 4 x NeoPixel Flora
 
 ### Communication Flow
 1. iPad connects to main controller via Bluetooth
