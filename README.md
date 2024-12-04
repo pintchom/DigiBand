@@ -25,7 +25,7 @@ The system consists of:
 - Simple, accessible interface
 
 ## Hardware Requirements
-- iPad (iOS 14+)
+- iPad (iOS 17+)
 - Circuit Playground Bluefruit
 - Raspberry Pi Pico W (1 per instrument)
 - Adaptive switches
