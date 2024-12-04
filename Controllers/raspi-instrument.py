@@ -1,4 +1,4 @@
-import board, time, digitalio
+import board, time, digitalio, neopixel
 from adafruit_debouncer import Button
 import wifi
 import socketpool
@@ -9,7 +9,8 @@ from adafruit_httpserver import Server, Request, Response
 import supervisor
 from adafruit_debouncer import Button
 
-HOST_URL = "http://10.20.73.111/"
+pixels = neopixel.NeoPixel(board.GP21, 1)
+HOST_URL = "http://10.20.75.236/"
 
 button_input = digitalio.DigitalInOut(board.GP15) # Wired to GP15
 button_input.switch_to_input(digitalio.Pull.UP) # Note: Pull.UP for external buttons
@@ -22,7 +23,7 @@ def send_signal():
         requests = adafruit_requests.Session(pool)
         response = requests.post(
             HOST_URL + "send-signal",
-            json={"device": 2}  # Replace with actual device ID if needed
+            json={"device": 4}  # Replace with actual device ID if needed
         )
 
         print("Response status code:", response.status_code)
@@ -61,4 +62,9 @@ while True:
     if button.pressed:
         print("Button pressed")
         send_signal()
-        time.sleep(.1)
+        pixels.fill((0, 255, 0))
+        pixels.brightness = 0
+        for i in range(101):
+            pixels.brightness = i / 100
+        for i in range(100, -1, -1):
+            pixels.brightness = i / 100
