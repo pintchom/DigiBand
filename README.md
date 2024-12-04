@@ -6,8 +6,8 @@ A collaborative music system designed for special needs education, enabling stud
 
 The system consists of:
 - iPad app (Host)
-- Circuit Playground Bluefruit (Main Controller)
-- Raspberry Pi Pico W devices (Instrument Controllers)
+- ESP32-S3 N8R8 (Main Controller)
+- 4 x Raspberry Pi Pico W devices (Instrument Controllers)
 - Adaptive switches for student input
 
 ### Communication Flow
@@ -33,8 +33,10 @@ The system consists of:
 
 ## Software Components
 - iOS app (Swift)
-- CircuitPython firmware for CPB
+- CircuitPython firmware for ESP32-S3 N8R8
 - CircuitPython firmware for Pico Ws
 - WebSocket server for device communication
 
-![image](https://github.com/user-attachments/assets/ade82d63-75ec-4fe9-8400-d471a860d50d)
+  Instructable: ![link](https://www.instructables.com/DIGIBAND-Accessibility-Drum-Machine-Bluetooth-Rece/)
+
+![image](https://github.com/user-attachments/assets/ec8033e4-889e-4f45-bb79-28f6afb1d00a)
